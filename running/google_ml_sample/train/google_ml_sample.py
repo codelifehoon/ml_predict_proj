@@ -9,7 +9,7 @@ from keras import layers
 from sklearn.preprocessing import MinMaxScaler
 from google.cloud import storage
 import logging
-
+from tensorflow.python.lib.io import file_io
 
 tf.set_random_seed(777)
 logging.getLogger().setLevel(logging.DEBUG)
@@ -32,18 +32,11 @@ args, _ = parser.parse_known_args()
 df = None
 
 if args.runtype == 'local':
-    source_path  =os.path.dirname(os.path.realpath(__file__)) + '/data/google_ml_sample_data2.xlsx'
-    df = pd.read_excel(source_path,dtype=np.float32)
+    source_path  =os.path.dirname(os.path.realpath(__file__)) + '/data/google_ml_sample_data2.csv'
+    df = pd.read_csv(source_path,dtype=np.float32)
 else :
-    source_path = '/data/google_ml_sample_data2.xlsx'
-    project = 'ml-codelife-20181219'
-    model_bucket = 'ml-codelife-20181219-data'
-
-    client = storage.Client(project=project)
-    bucket = client.get_bucket(model_bucket)
-    blob = bucket.get_blob(source_path)
-
-    df = pd.read_excel(blob.download_as_string(),dtype=np.float32)
+    with file_io.FileIO('gs://ml-codelife-20181219-data/train_data/google_ml_sample_data2.csv', 'r') as f:
+        df = pd.read_csv(f,dtype=np.float32)
 
 print(df.head())
 data_x = df.iloc[:, 0:10]
