@@ -1,3 +1,5 @@
+import os
+import argparse
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -5,13 +7,44 @@ import  keras
 from keras import models, optimizers, losses, metrics
 from keras import layers
 from sklearn.preprocessing import MinMaxScaler
+from google.cloud import storage
+import logging
 
-print(tf.__version__)
-print(keras.__version__)
 
 tf.set_random_seed(777)
+logging.getLogger().setLevel(logging.DEBUG)
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    '--runtype',
+    help='machine location',
+    choices=['local', 'real'],
+    default='real')
+args, _ = parser.parse_known_args()
+
+# Set C++ Graph Execution level verbosity(0:ALL)
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = 0
+
+
 # np.seterr(divide='ignore', invalid='ignore')
-df = pd.read_excel('/Users/codelife/Developer/python_proj/ml_predict_proj/running/google_ml_sample/train/data/google_ml_sample_data2.xlsx',dtype=np.float32)
+df = None
+
+if args.runtype == 'local':
+    source_path  =os.path.dirname(os.path.realpath(__file__)) + '/data/google_ml_sample_data2.xlsx'
+    df = pd.read_excel(source_path,dtype=np.float32)
+else :
+    source_path = '/data/google_ml_sample_data2.xlsx'
+    project = 'ml-codelife-20181219'
+    model_bucket = 'ml-codelife-20181219-data'
+
+    client = storage.Client(project=project)
+    bucket = client.get_bucket(model_bucket)
+    blob = bucket.get_blob(source_path)
+
+    df = pd.read_excel(blob.download_as_string(),dtype=np.float32)
+
 print(df.head())
 data_x = df.iloc[:, 0:10]
 data_y = df.iloc[:, 10]

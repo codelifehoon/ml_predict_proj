@@ -1,3 +1,7 @@
+# 결과물 저장을 storage/bucket/경로
+# marchine location
+# 실행할 작업명
+
 OUTPUT_PATH=gs://ml-codelife-20181219-data/train_data/
 REGION=us-central1
 JOB_NM="google_ml_sample$(date +%Y%m%d_%H%M%S)"
