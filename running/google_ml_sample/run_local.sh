@@ -9,5 +9,6 @@ gcloud ml-engine local train \
 --module-name train.google_ml_sample \
 --package-path train/  \
 -- \
+--runtype local
 --verbosity DEBUG
 

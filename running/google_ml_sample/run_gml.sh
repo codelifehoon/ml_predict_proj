@@ -15,6 +15,6 @@ gcloud ml-engine jobs submit training $JOB_NM \
 --region $REGION \
 --scale-tier BASIC_GPU \
 -- \
---verbosity DEBUG
-
+--verbosity DEBUG \
+--runtype real
 gcloud ml-engine jobs stream-logs $JOB_NM
