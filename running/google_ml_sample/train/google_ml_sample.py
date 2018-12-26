@@ -12,9 +12,13 @@ from sklearn.preprocessing import MinMaxScaler
 from google.cloud import storage
 import logging
 from tensorflow.python.lib.io import file_io
+import keras.backend.tensorflow_backend as K
+from tensorflow.python.client import device_lib
 
+print(device_lib.list_local_devices())
 tf.set_random_seed(777)
-logging.getLogger().setLevel(logging.DEBUG)
+# logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 start_dt = datetime.datetime.now()
 
 
@@ -66,24 +70,29 @@ test_data_x = data_x[data_train_size+data_val_size:]
 test_data_y = data_y[data_train_size+data_val_size:]
 
 
-model = models.Sequential()
-model.add(layers.Dense(20,activation='relu',input_shape=(data_x.shape[1],)))
-model.add(layers.Dense(20,activation='relu'))
-model.add(layers.Dense(20,activation='relu'))
-model.add(layers.Dense(1))
-model.compile(optimizer=optimizers.RMSprop(lr=0.0005),loss=losses.mse,metrics=[metrics.mae])
-model.fit(train_data_x,train_data_y,validation_data=(val_data_x,val_data_y),batch_size=10,epochs=5000)
+with K.tf.device('/device:GPU:0'):
+    model = models.Sequential()
+    model.add(layers.Dense(20,activation='relu',input_shape=(data_x.shape[1],)))
+    model.add(layers.Dense(20,activation='relu'))
+    model.add(layers.Dense(20,activation='relu'))
+    model.add(layers.Dense(1))
+    model.compile(optimizer=optimizers.RMSprop(lr=0.0005),loss=losses.mse,metrics=[metrics.mae])
+    model.fit(train_data_x,train_data_y,validation_data=(val_data_x,val_data_y),batch_size=10,epochs=5000)
 
-print('model.evaluate:' , model.evaluate(test_data_x,test_data_y))
+    print('model.evaluate:' , model.evaluate(test_data_x,test_data_y))
 
-predcit_y = model.predict(test_data_x)
-predcit_y = predcit_y * max_y
+    predcit_y = model.predict(test_data_x)
+    predcit_y = predcit_y * max_y
 
-test_data_y = np.reshape(test_data_y,(len(test_data_y),1))
-test_data_y = test_data_y * max_y
-end_dt = datetime.datetime.now()
+    test_data_y = np.reshape(test_data_y,(len(test_data_y),1))
+    test_data_y = test_data_y * max_y
+    end_dt = datetime.datetime.now()
 
-# model.evaluate: [645.5129208984375, 12.855860900878906]
-# 0:46:53.695693 2.1872904
-print(end_dt- start_dt,np.mean(predcit_y-test_data_y))
-print(np.hstack([predcit_y,test_data_y]))
+    # model.evaluate: [645.5129208984375, 12.855860900878906]
+    # 0:46:53.695693 2.1872904
+    # 3:44:33.742966 -30.310284
+    # model.evaluate: [1806.814185546875, 35.662621215820316]
+
+
+    print(end_dt- start_dt,np.mean(predcit_y-test_data_y))
+    print(np.hstack([predcit_y,test_data_y]))

@@ -12,6 +12,9 @@ from sklearn.preprocessing import MinMaxScaler
 from google.cloud import storage
 import logging
 from tensorflow.python.lib.io import file_io
+from tensorflow.python.client import device_lib
+
+print(device_lib.list_local_devices())
 
 tf.set_random_seed(777)
 logging.getLogger().setLevel(logging.DEBUG)
@@ -57,6 +60,4 @@ scaler.fit(data_x)
 data_x = scaler.transform(data_x)
 print('*'*100)
 print(data_x)
-
-
 
